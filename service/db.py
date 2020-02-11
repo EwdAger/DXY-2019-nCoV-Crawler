@@ -100,6 +100,17 @@ class DB:
                 str(data['latitude']), str(data['count'])
             )
 
+        elif collection == 'daily':
+            sql = """
+                INSERT INTO daily(confirm, suspect, dead, heal, deadRate, healRate, Tdate)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """
+
+            params = (
+                data['confirm'], data['suspect'], data['dead'], data['heal'], data['deadRate'], data['healRate'],
+                data['date']
+            )
+
         return sql, params
 
     def is_repeat(self, collection, data):
@@ -125,6 +136,13 @@ class DB:
                     FROM location
                     WHERE address =\"{}\" and longitude={} and latitude={}
                 """.format(data['address'], str(data['longitude']), str(data['latitude']))
+
+        elif collection == 'daily':
+            sql = """
+                SELECT *
+                FROM daily
+                WHERE date=\"{}\"
+            """.format(data['date'])
 
         try:
             self.cursor.execute(sql)

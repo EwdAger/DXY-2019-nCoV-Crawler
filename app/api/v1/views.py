@@ -7,7 +7,7 @@
 
 from flask import jsonify, request
 from . import api
-from .utils import select_overall_new, select_overall_all, select_area, select_location
+from .utils import select_overall_new, select_overall_all, select_area, select_location, select_daily
 from app.libs.result import Result
 import json
 
@@ -122,3 +122,24 @@ def location():
     return jsonify(Result(res))
 
 
+@api.route('/daily', methods=['GET'])
+def daily():
+    date = ''
+    if 'date' in request.args:
+        date = str(request.args['date'])
+
+    res = []
+    result = select_daily(date)
+    for i in result:
+        data = {
+            'confirm': i[1],
+            'suspect': i[2],
+            'dead': i[3],
+            'heal': i[4],
+            'deadRate': i[5],
+            'healRate': i[6],
+            'date': i[7]
+        }
+        res.append(data)
+
+    return jsonify(Result(res))

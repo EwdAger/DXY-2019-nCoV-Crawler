@@ -60,3 +60,12 @@ def select_location(province, city, district, address):
     """.format(province, city, district, address)
     res = db.execute(sql)
     return res
+
+def select_daily(date):
+    sql = """
+        SELECT * FROM `daily`
+    WHERE Tdate LIKE '%{}%'
+    """.format(date)
+
+    res = db.execute(sql)
+    return res

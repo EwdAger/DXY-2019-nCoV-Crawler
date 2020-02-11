@@ -24,7 +24,7 @@ ua = UserAgent()
 class Crawler:
     def __init__(self):
         self.session = requests.session()
-        self.session.headers.update({"user-agent":ua.random})
+        self.session.headers.update({"user-agent": ua.random})
         self.db = DB()
         self.crawl_timestamp = int()
 
@@ -40,6 +40,7 @@ class Crawler:
                 area = self.session.get(url="https://lab.isaaclin.cn/nCoV/api/area")
 
             except requests.exceptions.ChunkedEncodingError:
+                self.session.headers.update({"user-agent": ua.random})
                 continue
 
             history_overall = json.loads(overall.text)['results']
@@ -59,60 +60,54 @@ class Crawler:
             try:
                 r = self.session.get(url='https://3g.dxy.cn/newh5/view/pneumonia')
             except requests.exceptions.ChunkedEncodingError:
+                self.session.headers.update({"user-agent": ua.random})
                 continue
             soup = BeautifulSoup(r.content, 'lxml')
 
             overall_information = re.search(r'\{("id".*?)\]\}', str(soup.find('script', attrs={'id': 'getStatisticsService'})))
             area_information = re.search(r'\[(.*)\]', str(soup.find('script', attrs={'id': 'getAreaStat'})))
             abroad_information = re.search(r'\[(.*)\]', str(soup.find('script', attrs={'id': 'getListByCountryTypeService2'})))
-            # province_information = re.search(r'\[(.*?)\]', str(soup.find('script', attrs={'id': 'getListByCountryTypeService1'})))
-            # news = re.search(r'\[(.*?)\]', str(soup.find('script', attrs={'id': 'getTimelineService'})))
 
             if not overall_information or not area_information:
                 continue
 
-            self.overall_parser(overall_information=json.loads(overall_information.group(0)))
-            self.area_parser(area_information=json.loads(area_information.group(0)))
-            self.abroad_parser(abroad_information=json.loads(abroad_information.group(0)))
-
-            # self.province_parser(province_information=province_information)
-            # self.news_parser(news=news)
+            # self.overall_parser(overall_information=json.loads(overall_information.group(0)))
+            # self.area_parser(area_information=json.loads(area_information.group(0)))
+            # self.abroad_parser(abroad_information=json.loads(abroad_information.group(0)))
 
             break
 
         # 具体疫情区域
+        # while True:
+        #     try:
+        #         location = self.session.get(url="https://assets.cbndata.org/2019-nCoV/data.json")
+        #
+        #     except requests.exceptions.ChunkedEncodingError:
+        #         self.session.headers.update({"user-agent": ua.random})
+        #         continue
+        #
+        #     location = json.loads(location.text)['data']
+        #     for i in location:
+        #         self.location_parser(i, keep_cursor=True)
+        #     self.db.close_cursor()
+        #     break
+
         while True:
             try:
-                location = self.session.get(url="https://assets.cbndata.org/2019-nCoV/data.json")
-
+                daily = self.session.get(url="https://view.inews.qq.com/g2/getOnsInfo?name=disease_h5")
             except requests.exceptions.ChunkedEncodingError:
+                self.session.headers.update({"user-agent": ua.random})
                 continue
 
-            location = json.loads(location.text)['data']
-            for i in location:
-                self.location_parser(i, keep_cursor=True)
+            daily_json = json.loads(daily.text)['data']
+            daily_list = json.loads(daily_json)['chinaDayAddList']
+            for daily in daily_list:
+                self.daily_parser(daily, keep_cursor=True)
             self.db.close_cursor()
             break
 
         logger.info('Successfully crawled.')
 
-        # while True:
-        #     self.crawl_timestamp = int(datetime.datetime.timestamp(datetime.datetime.now()) * 1000)
-        #     try:
-        #         r = self.session.get(url='https://file1.dxycdn.com/2020/0127/797/3393185293879908067-115.json')
-        #     except requests.exceptions.ChunkedEncodingError:
-        #         continue
-        #     # Use try-except to ensure the .json() method will not raise exception.
-        #     try:
-        #         if r.status_code != 200:
-        #             continue
-        #         elif r.json().get('code') == 'success':
-        #             self.rumor_parser(rumors=r.json().get('data'))
-        #             break
-        #         else:
-        #             continue
-        #     except json.decoder.JSONDecodeError:
-        #         continue
 
     def overall_parser(self, overall_information, keep_cursor=False):
         self.db.open_cursor()
@@ -239,25 +234,14 @@ class Crawler:
                 pass
         self.db.close_cursor(keep_cursor)
 
-    def news_parser(self, news):
-        news = json.loads(news.group(0))
-        for _news in news:
-            _news.pop('pubDateStr')
-            if self.db.find_one(collection='DXYNews', data=_news):
-                continue
-            _news['crawlTime'] = self.crawl_timestamp
+    def daily_parser(self, daily, keep_cursor=False):
+        self.db.open_cursor()
+        is_repeat = self.db.is_repeat(collection='daily', data=daily)
+        if not is_repeat:
+            self.db.insert(collection='daily', data=daily)
 
-            self.db.insert(collection='DXYNews', data=_news)
+        self.db.close_cursor(keep_cursor)
 
-    def rumor_parser(self, rumors):
-        for rumor in rumors:
-            rumor.pop('score')
-            rumor['body'] = rumor['body'].replace(' ', '')
-            if self.db.find_one(collection='DXYRumors', data=rumor):
-                continue
-            rumor['crawlTime'] = self.crawl_timestamp
-
-            self.db.insert(collection='DXYRumors', data=rumor)
 
 
 if __name__ == '__main__':

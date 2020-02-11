@@ -54,14 +54,17 @@ cities|	下属城市的情况
 updateTime|	数据更新时间
 
 示例
-1. /nCoV/api/area?latest=1&province=湖北省
-返回湖北省疫情最新数据
+1. /api/v1/area?latest=1&province=湖北省
 
-2. /nCoV/api/area?latest=0&province=湖北省
-返回湖北省疫情的时间序列数据
+    返回湖北省疫情最新数据
 
-3. /nCoV/api/area?latest=1
-返回中国全部城市及世界其他国家疫情最新数据
+2. /api/v1/area?latest=0&province=湖北省
+
+    返回湖北省疫情的时间序列数据
+
+3. /api/v1/area?latest=1
+
+    返回中国全部城市及世界其他国家疫情最新数据
 
 ## 请求接口：/api/v1/location
 **请求方式：GET**
@@ -85,3 +88,35 @@ address | 详细地址
 longitude| 经度
 latitude| 纬度
 count| 总计人数
+
+# 请求接口：/api/v1/daily
+**请求方式：GET**
+返回每日新增确诊、疑似等数据
+
+变量名|注释
+---|---
+date| 日期（例1.20，返回1月20号数据）
+
+
+返回数据
+
+
+变量名|注释
+---|---
+confirm|新增确诊
+suspect|新增疑似
+dead|新增死亡
+heal|新增治愈
+deadRate| 当前死亡比例
+healRate| 当前治愈比例
+date| 日期
+
+实例：
+
+1. /api/v1/daily
+
+    返回从统计时间起每日新增人数
+
+2. /api/v1/daily?date=1.20
+
+    返回1月20日的新增数据
