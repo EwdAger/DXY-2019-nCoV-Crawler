@@ -71,26 +71,26 @@ class Crawler:
             if not overall_information or not area_information:
                 continue
 
-            # self.overall_parser(overall_information=json.loads(overall_information.group(0)))
-            # self.area_parser(area_information=json.loads(area_information.group(0)))
-            # self.abroad_parser(abroad_information=json.loads(abroad_information.group(0)))
+            self.overall_parser(overall_information=json.loads(overall_information.group(0)))
+            self.area_parser(area_information=json.loads(area_information.group(0)))
+            self.abroad_parser(abroad_information=json.loads(abroad_information.group(0)))
 
             break
 
         # 具体疫情区域
-        # while True:
-        #     try:
-        #         location = self.session.get(url="https://assets.cbndata.org/2019-nCoV/data.json")
-        #
-        #     except requests.exceptions.ChunkedEncodingError:
-        #         self.session.headers.update({"user-agent": ua.random})
-        #         continue
-        #
-        #     location = json.loads(location.text)['data']
-        #     for i in location:
-        #         self.location_parser(i, keep_cursor=True)
-        #     self.db.close_cursor()
-        #     break
+        while True:
+            try:
+                location = self.session.get(url="https://assets.cbndata.org/2019-nCoV/data.json")
+
+            except requests.exceptions.ChunkedEncodingError:
+                self.session.headers.update({"user-agent": ua.random})
+                continue
+
+            location = json.loads(location.text)['data']
+            for i in location:
+                self.location_parser(i, keep_cursor=True)
+            self.db.close_cursor()
+            break
 
         while True:
             try:
