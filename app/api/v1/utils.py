@@ -45,7 +45,7 @@ def select_area(latest, province):
             ) AS t
             GROUP BY provinceName
             HAVING provinceName LIKE '%{}%'
-            ORDER BY updateTime DESC
+            ORDER BY confirmedCount+0 DESC, updateTime DESC
         """.format(province)
     elif latest == '0':
         sql = """
@@ -54,7 +54,7 @@ def select_area(latest, province):
             ORDER BY updateTime DESC
             ) AS t
             WHERE provinceName LIKE '%{}%'
-            ORDER BY updateTime DESC;
+            ORDER BY confirmedCount+0 DESC, updateTime DESC;
         """.format(province)
 
     db.ping(reconnect=True)
