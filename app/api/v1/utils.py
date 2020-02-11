@@ -4,7 +4,11 @@
     Auth: EwdAger
     Date: 2020/2/11
 """
-from service.db import db
+import pymysql
+from app.config.setting import MYSQL_SETTING
+
+db = pymysql.connect(MYSQL_SETTING['url'], MYSQL_SETTING['user'], MYSQL_SETTING['password'],
+                     MYSQL_SETTING['db'], charset=MYSQL_SETTING['charset'])
 
 
 def select_overall_new():
@@ -13,6 +17,7 @@ def select_overall_new():
         ORDER BY updateTime desc
         LIMIT 1;
     """
+    db.ping(reconnect=True)
     cursor = db.cursor()
     cursor.execute(sql)
     res = cursor.fetchall()
@@ -24,6 +29,7 @@ def select_overall_all():
         SELECT DISTINCT * FROM `overall`
         ORDER BY updateTime desc
     """
+    db.ping(reconnect=True)
     cursor = db.cursor()
     cursor.execute(sql)
     res = cursor.fetchall()
@@ -50,6 +56,8 @@ def select_area(latest, province):
             WHERE provinceName LIKE '%{}%'
             ORDER BY updateTime DESC;
         """.format(province)
+
+    db.ping(reconnect=True)
     cursor = db.cursor()
     cursor.execute(sql)
     res = cursor.fetchall()
@@ -65,6 +73,7 @@ def select_location(province, city, district, address):
             AND district LIKE "%{}%"
             AND address LIKE "%{}%";
     """.format(province, city, district, address)
+    db.ping(reconnect=True)
     cursor = db.cursor()
     cursor.execute(sql)
     res = cursor.fetchall()
@@ -76,7 +85,7 @@ def select_daily(date):
         SELECT * FROM `daily`
     WHERE Tdate LIKE '%{}%'
     """.format(date)
-
+    db.ping(reconnect=True)
     cursor = db.cursor()
     cursor.execute(sql)
     res = cursor.fetchall()

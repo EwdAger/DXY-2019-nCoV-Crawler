@@ -34,16 +34,19 @@ class DB:
 
     def insert(self, collection, data):
         sql, params = self.get_insert_sql(collection, data)
+        self.db.ping(reconnect=True)
         self.cursor.execute(sql, params)
         self.db.commit()
 
     def update(self, collection, data):
         sql = self.get_update_sql(collection, data)
+        self.db.ping(reconnect=True)
         self.cursor.execute(sql)
         self.db.commit()
 
     def execute(self, sql):
         self.open_cursor()
+        self.db.ping(reconnect=True)
         self.cursor.execute(sql)
         res = self.cursor.fetchall()
         self.close_cursor()
@@ -145,6 +148,7 @@ class DB:
             """.format(data['date'])
 
         try:
+            self.db.ping(reconnect=True)
             self.cursor.execute(sql)
             is_repeat = self.cursor.fetchall()
         except:
