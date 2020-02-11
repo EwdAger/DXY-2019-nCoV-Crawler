@@ -14,8 +14,10 @@
 # db = client['2019-nCoV']
 
 import pymysql
+from app.config.setting import MYSQL_SETTING
 
-db = pymysql.connect("localhost", "root", "123456", "2019ncov", charset='utf8')
+db = pymysql.connect(MYSQL_SETTING['url'], MYSQL_SETTING['user'], MYSQL_SETTING['password'],
+                     MYSQL_SETTING['db'], charset=MYSQL_SETTING['charset'])
 
 
 class DB:
@@ -40,8 +42,13 @@ class DB:
         self.cursor.execute(sql)
         self.db.commit()
 
-    def find_one(self, collection, data=None):
-        pass
+    def execute(self, sql):
+        self.open_cursor()
+        self.cursor.execute(sql)
+        res = self.cursor.fetchall()
+        self.close_cursor()
+
+        return res
 
     def open_cursor(self):
         if not self.cursor:
@@ -102,8 +109,8 @@ class DB:
                 SELECT confirmedCount, suspectedCount, curedCount, deadCount
                 FROM overall
                 WHERE confirmedCount={} and suspectedCount={} and curedCount={} and deadCount={}
-            """ .format(str(data['confirmedCount']),
-                        str(data['suspectedCount']), str(data['curedCount']), str(data['deadCount']))
+            """.format(str(data['confirmedCount']),
+                       str(data['suspectedCount']), str(data['curedCount']), str(data['deadCount']))
         elif collection == "DXYArea":
             sql = """
                     SELECT provinceName, confirmedCount, suspectedCount, curedCount, deadCount
