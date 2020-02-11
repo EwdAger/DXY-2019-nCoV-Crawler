@@ -4,9 +4,7 @@
     Auth: EwdAger
     Date: 2020/2/11
 """
-from service.db import DB
-
-db = DB()
+from service.db import db
 
 
 def select_overall_new():
@@ -15,7 +13,10 @@ def select_overall_new():
         ORDER BY updateTime desc
         LIMIT 1;
     """
-    res = db.execute(sql)
+    cursor = db.cursor()
+    cursor.execute(sql)
+    res = cursor.fetchall()
+    cursor.close()
     return res
 
 def select_overall_all():
@@ -23,7 +24,10 @@ def select_overall_all():
         SELECT DISTINCT * FROM `overall`
         ORDER BY updateTime desc
     """
-    res = db.execute(sql)
+    cursor = db.cursor()
+    cursor.execute(sql)
+    res = cursor.fetchall()
+    cursor.close()
     return res
 
 def select_area(latest, province):
@@ -46,7 +50,10 @@ def select_area(latest, province):
             WHERE provinceName LIKE '%{}%'
             ORDER BY updateTime DESC;
         """.format(province)
-    res = db.execute(sql)
+    cursor = db.cursor()
+    cursor.execute(sql)
+    res = cursor.fetchall()
+    cursor.close()
     return res
 
 def select_location(province, city, district, address):
@@ -58,7 +65,10 @@ def select_location(province, city, district, address):
             AND district LIKE "%{}%"
             AND address LIKE "%{}%";
     """.format(province, city, district, address)
-    res = db.execute(sql)
+    cursor = db.cursor()
+    cursor.execute(sql)
+    res = cursor.fetchall()
+    cursor.close()
     return res
 
 def select_daily(date):
@@ -67,5 +77,8 @@ def select_daily(date):
     WHERE Tdate LIKE '%{}%'
     """.format(date)
 
-    res = db.execute(sql)
+    cursor = db.cursor()
+    cursor.execute(sql)
+    res = cursor.fetchall()
+    cursor.close()
     return res
