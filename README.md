@@ -135,10 +135,10 @@ date| 日期（例1.20，返回1月20号数据）
 
 变量名|注释
 ---|---
-confirm|新增确诊
-suspect|新增疑似
-dead|新增死亡
-heal|新增治愈
+confirm|累计确诊
+suspect|累计疑似
+dead|累计死亡
+heal|累计治愈
 deadRate| 当前死亡比例
 healRate| 当前治愈比例
 date| 日期
