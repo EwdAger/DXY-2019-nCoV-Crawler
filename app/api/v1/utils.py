@@ -5,11 +5,9 @@
     Date: 2020/2/11
 """
 import pymysql
-from app.config.setting import MYSQL_SETTING
+from app.libs.mysqlconn import POOL
 
-db = pymysql.connect(MYSQL_SETTING['url'], MYSQL_SETTING['user'], MYSQL_SETTING['password'],
-                     MYSQL_SETTING['db'], charset=MYSQL_SETTING['charset'])
-
+db = POOL.connection()
 
 def select_overall_new():
     sql = """
@@ -18,7 +16,7 @@ def select_overall_new():
         LIMIT 1;
     """
     db.ping(reconnect=True)
-    cursor = db.cursor()
+    cursor = db.cursor(pymysql.cursors.DictCursor)
     cursor.execute(sql)
     res = cursor.fetchall()
     cursor.close()
@@ -30,7 +28,7 @@ def select_overall_all():
         ORDER BY updateTime desc
     """
     db.ping(reconnect=True)
-    cursor = db.cursor()
+    cursor = db.cursor(pymysql.cursors.DictCursor)
     cursor.execute(sql)
     res = cursor.fetchall()
     cursor.close()
@@ -58,7 +56,7 @@ def select_area(latest, province):
         """.format(province)
 
     db.ping(reconnect=True)
-    cursor = db.cursor()
+    cursor = db.cursor(pymysql.cursors.DictCursor)
     cursor.execute(sql)
     res = cursor.fetchall()
     cursor.close()
@@ -74,7 +72,7 @@ def select_location(province, city, district, address):
             AND address LIKE "%{}%";
     """.format(province, city, district, address)
     db.ping(reconnect=True)
-    cursor = db.cursor()
+    cursor = db.cursor(pymysql.cursors.DictCursor)
     cursor.execute(sql)
     res = cursor.fetchall()
     cursor.close()
@@ -86,7 +84,7 @@ def select_daily(date):
     WHERE Tdate LIKE '%{}%'
     """.format(date)
     db.ping(reconnect=True)
-    cursor = db.cursor()
+    cursor = db.cursor(pymysql.cursors.DictCursor)
     cursor.execute(sql)
     res = cursor.fetchall()
     cursor.close()

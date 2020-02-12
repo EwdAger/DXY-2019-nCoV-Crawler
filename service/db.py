@@ -14,15 +14,12 @@
 # db = client['2019-nCoV']
 
 import pymysql
-from app.config.setting import MYSQL_SETTING
-
-db = pymysql.connect(MYSQL_SETTING['url'], MYSQL_SETTING['user'], MYSQL_SETTING['password'],
-                     MYSQL_SETTING['db'], charset=MYSQL_SETTING['charset'])
+from app.libs.mysqlconn import POOL
 
 
 class DB:
     def __init__(self):
-        self.db = db
+        self.db = POOL.connection()
         self.cursor = None
 
     # MongoDB
@@ -55,7 +52,7 @@ class DB:
 
     def open_cursor(self):
         if not self.cursor:
-            self.cursor = db.cursor()
+            self.cursor = self.db.cursor(pymysql.cursors.DictCursor)
 
     def close_cursor(self, keep_cursor=False):
         if self.cursor and keep_cursor is False:

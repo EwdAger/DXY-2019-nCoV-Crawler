@@ -5,3 +5,4 @@ PyMySQL >=0.9.3
 fake-useragent >=0.1.11
 flask >=1.1.1
 flask-CORS >= 3.0.8
+DBUtils >=1.3
