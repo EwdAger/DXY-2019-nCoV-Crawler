@@ -7,7 +7,7 @@
 
 from flask import jsonify, request
 from . import api
-from .utils import select_overall_new, select_overall_all, select_area, select_location, select_daily
+from .utils import select_overall_new, select_overall_all, select_area, select_location, select_daily, select_daily_combined
 from app.libs.result import Result
 import json
 
@@ -68,6 +68,20 @@ def daily():
         date = str(request.args['date'])
 
     res = select_daily(date)
+    for i in res:
+        i['date'] = i['Tdate']
+        i.pop('Tdate')
+
+    return jsonify(Result(res))
+
+
+@api.route('/dailyCombined', methods=['GET'])
+def daily_combined():
+    date = ''
+    if 'date' in request.args:
+        date = str(request.args['date'])
+
+    res = select_daily_combined(date)
     for i in res:
         i['date'] = i['Tdate']
         i.pop('Tdate')

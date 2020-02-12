@@ -120,3 +120,35 @@ date| 日期
 2. /api/v1/daily?date=1.20
 
     返回1月20日的新增数据
+    
+# 请求接口：/api/v1/dailyCombined
+**请求方式：GET**
+返回每日累计确诊、疑似等数据
+
+变量名|注释
+---|---
+date| 日期（例1.20，返回1月20号数据）
+
+
+返回数据
+
+
+变量名|注释
+---|---
+confirm|新增确诊
+suspect|新增疑似
+dead|新增死亡
+heal|新增治愈
+deadRate| 当前死亡比例
+healRate| 当前治愈比例
+date| 日期
+
+实例：
+
+1. /api/v1/dailyCombined
+
+    返回从统计时间起每日累计人数
+
+2. /api/v1/dailyCombined?date=1.20
+
+    返回1月20日的累计数据

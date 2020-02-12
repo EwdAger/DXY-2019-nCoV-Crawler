@@ -5,14 +5,6 @@
 @Date: 2020/1/21
 """
 
-# MongoDB
-# from pymongo import MongoClient
-#
-#
-# uri = '**Confidential**'
-# client = MongoClient(uri)
-# db = client['2019-nCoV']
-
 import pymysql
 from app.libs.mysqlconn import POOL
 
@@ -24,13 +16,11 @@ class DB:
 
     def insert(self, collection, data):
         sql, params = self.get_insert_sql(collection, data)
-        self.db.ping(reconnect=True)
         self.cursor.execute(sql, params)
         self.db.commit()
 
     def update(self, collection, data):
         sql = self.get_update_sql(collection, data)
-        self.db.ping(reconnect=True)
         self.cursor.execute(sql)
         self.db.commit()
 
@@ -44,7 +34,7 @@ class DB:
             self.cursor.close()
             self.db.close()
             self.cursor = None
-            self.db.close()
+            self.db = None
             return True
         else:
             return False
@@ -87,9 +77,20 @@ class DB:
                 str(data['latitude']), str(data['count'])
             )
 
-        elif collection == 'daily':
+        elif collection == 'day_add_list':
             sql = """
                 INSERT INTO daily(confirm, suspect, dead, heal, deadRate, healRate, Tdate)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """
+
+            params = (
+                data['confirm'], data['suspect'], data['dead'], data['heal'], data['deadRate'], data['healRate'],
+                data['date']
+            )
+
+        elif collection == 'day_list':
+            sql = """
+                INSERT INTO dayList(confirm, suspect, dead, heal, deadRate, healRate, Tdate)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
 
@@ -124,15 +125,21 @@ class DB:
                     WHERE address =\"{}\" and longitude={} and latitude={}
                 """.format(data['address'], str(data['longitude']), str(data['latitude']))
 
-        elif collection == 'daily':
+        elif collection == 'day_add_list':
             sql = """
                 SELECT *
                 FROM daily
-                WHERE date=\"{}\"
+                WHERE Tdate=\"{}\"
             """.format(data['date'])
 
+        elif collection == 'day_list':
+            sql = """
+                    SELECT *
+                    FROM dayList
+                    WHERE Tdate=\"{}\"
+                """.format(data['date'])
+
         try:
-            self.db.ping(reconnect=True)
             self.cursor.execute(sql)
             is_repeat = self.cursor.fetchall()
         except:

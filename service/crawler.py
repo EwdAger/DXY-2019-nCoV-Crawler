@@ -30,8 +30,12 @@ class Crawler:
 
     def run(self):
         while True:
-            self.crawler()
-            time.sleep(60*3600)
+            self.tencent_crawler()
+            self.dxy_crawler()
+            self.location_crawler()
+            logger.info('所有数据爬取完毕，开始沉睡1小时')
+            time.sleep(3600)
+            logger.info('沉睡结束')
 
     def history_data_crawler(self):
         while True:
@@ -53,9 +57,10 @@ class Crawler:
 
             break
 
-    def crawler(self):
+    def dxy_crawler(self):
         # 全国疫情
         while True:
+            logger.info('开始爬取丁香园数据')
             self.crawl_timestamp = int(datetime.datetime.timestamp(datetime.datetime.now()) * 1000)
             try:
                 r = self.session.get(url='https://3g.dxy.cn/newh5/view/pneumonia')
@@ -70,45 +75,58 @@ class Crawler:
 
             if not overall_information or not area_information:
                 continue
-
+            logger.info('丁香园数据数据读取成功，正在写入数据库')
             self.overall_parser(overall_information=json.loads(overall_information.group(0)))
+            logger.info('丁香园overall数据写入完毕')
             self.area_parser(area_information=json.loads(area_information.group(0)))
             self.abroad_parser(abroad_information=json.loads(abroad_information.group(0)))
-
+            logger.info('丁香园area数据写入完毕')
+            logger.info('丁香园数据爬取完毕')
             break
+
+    def location_crawler(self):
 
         # 具体疫情区域
         while True:
+            logger.info('开始爬取详细地理位置数据')
             try:
                 location = self.session.get(url="https://assets.cbndata.org/2019-nCoV/data.json")
 
             except requests.exceptions.ChunkedEncodingError:
+                logger.info('详细地理位置数据读取失败，正在重试')
                 self.session.headers.update({"user-agent": ua.random})
                 continue
-
+            logger.info('详细地理位置数据数据读取成功，正在写入数据库')
             location = json.loads(location.text)['data']
             for i in location:
                 self.location_parser(i, keep_cursor=True)
             self.db.close_cursor()
+            logger.info('详细地理位置数据爬取完毕')
             break
+
+    def tencent_crawler(self):
 
         # 每日新增
         while True:
+            logger.info('开始爬取腾讯数据')
             try:
                 daily = self.session.get(url="https://view.inews.qq.com/g2/getOnsInfo?name=disease_h5")
             except requests.exceptions.ChunkedEncodingError:
                 self.session.headers.update({"user-agent": ua.random})
+                logger.info('腾讯数据数据读取失败，正在重试')
                 continue
-
+            logger.info('腾讯数据数据读取成功，正在写入数据库')
             daily_json = json.loads(daily.text)['data']
-            daily_list = json.loads(daily_json)['chinaDayAddList']
-            for daily in daily_list:
-                self.daily_parser(daily, keep_cursor=True)
+            daily_dict = json.loads(daily_json)
+            day_add_list = daily_dict['chinaDayAddList']
+            day_list = daily_dict['chinaDayList']
+            for daily in day_add_list:
+                self.day_add_list_parser(daily, keep_cursor=True)
+            for daily in day_list:
+                self.day_list_parser(daily, keep_cursor=True)
             self.db.close_cursor()
+            logger.info('腾讯数据爬取完毕')
             break
-
-        logger.info('Successfully crawled.')
-
 
     def overall_parser(self, overall_information, keep_cursor=False):
         self.db.open_cursor()
@@ -235,11 +253,19 @@ class Crawler:
                 pass
         self.db.close_cursor(keep_cursor)
 
-    def daily_parser(self, daily, keep_cursor=False):
+    def day_add_list_parser(self, daily, keep_cursor=False):
         self.db.open_cursor()
-        is_repeat = self.db.is_repeat(collection='daily', data=daily)
+        is_repeat = self.db.is_repeat(collection='day_add_list', data=daily)
         if not is_repeat:
-            self.db.insert(collection='daily', data=daily)
+            self.db.insert(collection='day_add_list', data=daily)
+
+        self.db.close_cursor(keep_cursor)
+
+    def day_list_parser(self, day_add_list, keep_cursor=False):
+        self.db.open_cursor()
+        is_repeat = self.db.is_repeat(collection='day_list', data=day_add_list)
+        if not is_repeat:
+            self.db.insert(collection='day_list', data=day_add_list)
 
         self.db.close_cursor(keep_cursor)
 
