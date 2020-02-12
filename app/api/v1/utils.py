@@ -7,7 +7,7 @@
 import pymysql
 from app.libs.mysqlconn import POOL
 
-db = POOL.connection()
+
 
 def select_overall_new():
     sql = """
@@ -15,11 +15,13 @@ def select_overall_new():
         ORDER BY updateTime desc
         LIMIT 1;
     """
+    db = POOL.connection()
     db.ping(reconnect=True)
     cursor = db.cursor(pymysql.cursors.DictCursor)
     cursor.execute(sql)
     res = cursor.fetchall()
     cursor.close()
+    db.close()
     return res
 
 def select_overall_all():
@@ -27,11 +29,13 @@ def select_overall_all():
         SELECT DISTINCT * FROM `overall`
         ORDER BY updateTime desc
     """
+    db = POOL.connection()
     db.ping(reconnect=True)
     cursor = db.cursor(pymysql.cursors.DictCursor)
     cursor.execute(sql)
     res = cursor.fetchall()
     cursor.close()
+    db.close()
     return res
 
 def select_area(latest, province):
@@ -55,11 +59,13 @@ def select_area(latest, province):
             ORDER BY country="中国" DESC, confirmedCount+0 DESC, updateTime DESC;
         """.format(province)
 
+    db = POOL.connection()
     db.ping(reconnect=True)
     cursor = db.cursor(pymysql.cursors.DictCursor)
     cursor.execute(sql)
     res = cursor.fetchall()
     cursor.close()
+    db.close()
     return res
 
 def select_location(province, city, district, address):
@@ -71,11 +77,13 @@ def select_location(province, city, district, address):
             AND district LIKE "%{}%"
             AND address LIKE "%{}%";
     """.format(province, city, district, address)
+    db = POOL.connection()
     db.ping(reconnect=True)
     cursor = db.cursor(pymysql.cursors.DictCursor)
     cursor.execute(sql)
     res = cursor.fetchall()
     cursor.close()
+    db.close()
     return res
 
 def select_daily(date):
@@ -83,9 +91,11 @@ def select_daily(date):
         SELECT * FROM `daily`
     WHERE Tdate LIKE '%{}%'
     """.format(date)
+    db = POOL.connection()
     db.ping(reconnect=True)
     cursor = db.cursor(pymysql.cursors.DictCursor)
     cursor.execute(sql)
     res = cursor.fetchall()
     cursor.close()
+    db.close()
     return res
