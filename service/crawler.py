@@ -92,6 +92,7 @@ class Crawler:
             self.db.close_cursor()
             break
 
+        # 每日新增
         while True:
             try:
                 daily = self.session.get(url="https://view.inews.qq.com/g2/getOnsInfo?name=disease_h5")

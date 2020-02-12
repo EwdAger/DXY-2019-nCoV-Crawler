@@ -19,15 +19,8 @@ from app.libs.mysqlconn import POOL
 
 class DB:
     def __init__(self):
-        self.db = POOL.connection()
+        self.db = None
         self.cursor = None
-
-    # MongoDB
-    # def insert(self, collection, data):
-    #     self.db[collection].insert(data)
-    #
-    # def find_one(self, collection, data=None):
-    #     return self.db[collection].find_one(data)
 
     def insert(self, collection, data):
         sql, params = self.get_insert_sql(collection, data)
@@ -41,23 +34,17 @@ class DB:
         self.cursor.execute(sql)
         self.db.commit()
 
-    def execute(self, sql):
-        self.open_cursor()
-        self.db.ping(reconnect=True)
-        self.cursor.execute(sql)
-        res = self.cursor.fetchall()
-        self.close_cursor()
-
-        return res
-
     def open_cursor(self):
-        if not self.cursor:
+        if not self.cursor and not self.db:
+            self.db = POOL.connection()
             self.cursor = self.db.cursor(pymysql.cursors.DictCursor)
 
     def close_cursor(self, keep_cursor=False):
         if self.cursor and keep_cursor is False:
             self.cursor.close()
+            self.db.close()
             self.cursor = None
+            self.db.close()
             return True
         else:
             return False

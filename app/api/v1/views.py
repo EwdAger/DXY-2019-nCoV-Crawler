@@ -68,5 +68,8 @@ def daily():
         date = str(request.args['date'])
 
     res = select_daily(date)
+    for i in res:
+        i['date'] = i['Tdate']
+        i.pop('Tdate')
 
     return jsonify(Result(res))
