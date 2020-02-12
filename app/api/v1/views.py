@@ -37,6 +37,8 @@ def area():
         province = str(request.args['province'])
 
     res = select_area(latest, province)
+    for i in res:
+        i['cities'] = json.loads(i['cities'])
 
     return jsonify(Result(res))
 
