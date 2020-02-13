@@ -122,8 +122,9 @@ class DB:
             sql = """
                     SELECT *
                     FROM location
-                    WHERE address =\"{}\" and longitude={} and latitude={}
-                """.format(data['address'], str(data['longitude']), str(data['latitude']))
+                    WHERE province =\"{}\" and city={} and district={} and address =\"{}\" and longitude={} and latitude={}
+                """.format(data['province'], data['city'], data['district'], data['address'], str(data['longitude']),
+                           str(data['latitude']))
 
         elif collection == 'day_add_list':
             sql = """

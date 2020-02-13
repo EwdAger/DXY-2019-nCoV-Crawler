@@ -89,18 +89,27 @@ class Crawler:
         # 具体疫情区域
         while True:
             logger.info('开始爬取详细地理位置数据')
+            locations = []
             try:
-                location = self.session.get(url="https://assets.cbndata.org/2019-nCoV/data.json")
+                fail_count, count = 0, 0
+                while fail_count < 5:
+                    location = self.session.get(url="https://assets.cbndata.org/2019-nCoV/{}/data.json".format(count))
+                    if location.ok is True:
+                        count += 1
+                        locations.append(location)
+                    else:
+                        fail_count += 1
 
             except requests.exceptions.ChunkedEncodingError:
                 logger.info('详细地理位置数据读取失败，正在重试')
                 self.session.headers.update({"user-agent": ua.random})
                 continue
             logger.info('详细地理位置数据数据读取成功，正在写入数据库')
-            location = json.loads(location.text)['data']
-            for i in location:
-                self.location_parser(i, keep_cursor=True)
-            self.db.close_cursor()
+            for location in locations:
+                location = json.loads(location.text)['data']
+                for i in location:
+                    self.location_parser(i, keep_cursor=True)
+                self.db.close_cursor()
             logger.info('详细地理位置数据爬取完毕')
             break
 
@@ -273,5 +282,4 @@ class Crawler:
 
 if __name__ == '__main__':
     crawler = Crawler()
-    # crawler.history_data_crawler()
-    crawler.run()
+    crawler.location_crawler()
