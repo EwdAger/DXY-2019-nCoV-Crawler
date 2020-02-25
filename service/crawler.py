@@ -119,7 +119,7 @@ class Crawler:
         while True:
             logger.info('开始爬取腾讯数据')
             try:
-                daily = self.session.get(url="https://view.inews.qq.com/g2/getOnsInfo?name=disease_h5")
+                daily = self.session.get(url="https://view.inews.qq.com/g2/getOnsInfo?name=disease_other")
             except requests.exceptions.ChunkedEncodingError:
                 self.session.headers.update({"user-agent": ua.random})
                 logger.info('腾讯数据数据读取失败，正在重试')
@@ -282,4 +282,5 @@ class Crawler:
 
 if __name__ == '__main__':
     crawler = Crawler()
-    crawler.location_crawler()
+    # crawler.location_crawler()
+    crawler.tencent_crawler()
