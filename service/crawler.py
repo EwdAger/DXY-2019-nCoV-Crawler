@@ -32,7 +32,7 @@ class Crawler:
         while True:
             self.tencent_crawler()
             self.dxy_crawler()
-            self.location_crawler()
+            # self.location_crawler()
             logger.info('所有数据爬取完毕，开始沉睡1小时')
             time.sleep(3600)
             logger.info('沉睡结束')
@@ -69,14 +69,15 @@ class Crawler:
                 continue
             soup = BeautifulSoup(r.content, 'lxml')
 
-            overall_information = re.search(r'\{("id".*?)\]\}', str(soup.find('script', attrs={'id': 'getStatisticsService'})))
+            overall_information = re.search(r'(\{"id".*\}\})\}',
+                                            str(soup.find('script', attrs={'id': 'getStatisticsService'})))
             area_information = re.search(r'\[(.*)\]', str(soup.find('script', attrs={'id': 'getAreaStat'})))
             abroad_information = re.search(r'\[(.*)\]', str(soup.find('script', attrs={'id': 'getListByCountryTypeService2'})))
 
             if not overall_information or not area_information:
                 continue
             logger.info('丁香园数据数据读取成功，正在写入数据库')
-            self.overall_parser(overall_information=json.loads(overall_information.group(0)))
+            self.overall_parser(overall_information=json.loads(overall_information.group(1)))
             logger.info('丁香园overall数据写入完毕')
             self.area_parser(area_information=json.loads(area_information.group(0)))
             self.abroad_parser(abroad_information=json.loads(abroad_information.group(0)))
@@ -283,4 +284,4 @@ class Crawler:
 if __name__ == '__main__':
     crawler = Crawler()
     # crawler.location_crawler()
-    crawler.tencent_crawler()
+    crawler.dxy_crawler()
